@@ -1,5 +1,8 @@
 import math
 import json
+import datetime
+from multiprocessing import Pool
+from typing import List
 
 
 class Taxes:
@@ -71,6 +74,8 @@ class Taxes:
         )
 
     def rate_sequence(self, salary):
+        # with Pool() as exe:
+        #     return exe.map(self.gross_salary, [(salary, (rate / 400)) for rate in range(400)])
         return (self.gross_salary(salary, (rate / 400)) for rate in range(400))
 
     def best_salary(self, salary):
@@ -84,7 +89,21 @@ class Taxes:
             return self.gross_salary(salary, 0)
         return min(best_sal, key=lambda x: x[2])
 
-    def all_sequence(self, min_sal, max_sal, step):
-        return (
-            self.best_salary(salary) for salary in range(min_sal, max_sal + step, step)
-        )
+    def all_sequence(self, min_sal, max_sal, step) -> List[tuple]:
+        with Pool() as exe:
+            return exe.map(self.best_salary,[salary for salary in range(min_sal,max_sal + step,step)])
+    
+
+if __name__ == "__main__":
+
+    tax = Taxes("30",0.25)
+    start = datetime.datetime.now()
+
+    step = 25_000
+
+    all =  tax.all_sequence(500_000,20_000_000 + 50_000,step)
+
+    end =  datetime.datetime.now() - start
+
+    print(f"{end = }")
+        
